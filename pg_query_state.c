@@ -47,6 +47,8 @@ static ExecutorRun_hook_type prev_ExecutorRun = NULL;
 static ExecutorFinish_hook_type prev_ExecutorFinish = NULL;
 static shmem_startup_hook_type prev_shmem_startup_hook = NULL;
 
+//void standard_CountInvisibleRows(HeapTuple htup, bool is_visible);
+
 void		_PG_init(void);
 
 /* hooks defined in this module */
@@ -285,6 +287,9 @@ qs_ExecutorStart(QueryDesc *queryDesc, int eflags)
 			queryDesc->instrument_options |= INSTRUMENT_BUFFERS;
 	}
 
+	if (track_invisible_rows)
+		rows_invisibility_check_hook = standard_CountInvisibleRows;
+
 	if (prev_ExecutorStart)
 		prev_ExecutorStart(queryDesc, eflags);
 	else
@@ -334,6 +339,7 @@ qs_ExecutorRun(QueryDesc *queryDesc, ScanDirection direction, uint64 count,
 static void
 qs_ExecutorFinish(QueryDesc *queryDesc)
 {
+	ResetInvisibleRowsCount();
 	QueryDescStack = lcons(queryDesc, QueryDescStack);
 
 	PG_TRY();
