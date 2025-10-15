@@ -59,6 +59,7 @@ runtime_explain()
 	es->costs = params->costs;
 	es->buffers = params->buffers && pg_qs_buffers;
 	es->timing = params->timing && pg_qs_timing;
+	es->inv_rows = params->inv_rows && pg_qs_inv_rows;
 	es->summary = false;
 	es->format = params->format;
 	es->runtime = true;
@@ -305,6 +306,8 @@ SendQueryState(void)
 			msg->warnings |= TIMINIG_OFF_WARNING;
 		if (params->buffers && !pg_qs_buffers)
 			msg->warnings |= BUFFERS_OFF_WARNING;
+		if (params->inv_rows && !pg_qs_inv_rows)
+			msg->warnings |= INV_ROWS_OFF_WARNING;
 
 		msg->stack_depth = list_length(qs_stack);
 		serialize_stack(msg->stack, qs_stack);
