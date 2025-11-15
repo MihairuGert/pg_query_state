@@ -125,7 +125,7 @@ There are several user-accessible [GUC](https://www.postgresql.org/docs/9.5/stat
  - `pg_query_state.enable_buffers` --- collect buffers usage, default value is `false`
  - `pg_query_state.enable_inv_rows` --- collect invisible rows usage, default value is `false`
 
-This parameters is set on called side before running any queries whose states are attempted to extract. **_Warning_**: if `pg_query_state.enable_timing` is turned off the calling side cannot get time statistics, similarly for `pg_query_state.enable_buffers` and `pg_query_state.enable_inv_rows` parameter.
+This parameters is set on called side before running any queries whose states are attempted to extract. **_Warning_**: if `pg_query_state.enable_timing` is turned off the calling side cannot get time statistics, similarly for `pg_query_state.enable_buffers` and `pg_query_state.enable_inv_rows` parameters.
 
 ## Examples
 Set maximum number of parallel workers on `gather` node equals `2`:
