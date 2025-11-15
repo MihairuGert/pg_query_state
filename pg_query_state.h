@@ -79,8 +79,8 @@ typedef struct
 	bool	costs;
 	bool	timing;
 	bool	buffers;
-	bool	triggers;
 	bool	inv_rows;
+	bool	triggers;
 	ExplainFormat format;
 } pg_qs_params;
 
