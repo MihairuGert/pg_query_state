@@ -40,6 +40,7 @@ PG_MODULE_MAGIC;
 bool pg_qs_enable = true;
 bool pg_qs_timing = false;
 bool pg_qs_buffers = false;
+bool pg_qs_inv_rows = false;
 
 /* Saved hook values in case of unload */
 static ExecutorStart_hook_type prev_ExecutorStart = NULL;
@@ -88,6 +89,7 @@ static List *GetRemoteBackendQueryStates(PGPROC *leader,
 										 bool costs,
 										 bool timing,
 										 bool buffers,
+										 bool inv_rows,
 										 bool triggers,
 										 ExplainFormat format);
 
@@ -234,6 +236,16 @@ _PG_init(void)
 							 NULL,
 							 NULL,
 							 NULL);
+	DefineCustomBoolVariable("pg_query_state.enable_inv_rows",
+							 "Collect invisible rows count.",
+							 NULL,
+							 &pg_qs_inv_rows,
+							 false,
+							 PGC_SUSET,
+							 0,
+							 NULL,
+							 NULL,
+							 NULL);
 	EmitWarningsOnPlaceholders("pg_query_state");
 
 	/* Install hooks */
@@ -274,6 +286,8 @@ qs_ExecutorStart(QueryDesc *queryDesc, int eflags)
 			queryDesc->instrument_options |= INSTRUMENT_TIMER;
 		if (pg_qs_buffers)
 			queryDesc->instrument_options |= INSTRUMENT_BUFFERS;
+		if (pg_qs_inv_rows)
+			queryDesc->instrument_options |= INSTRUMENT_INV_ROWS;
 	}
 
 	if (prev_ExecutorStart)
@@ -515,8 +529,9 @@ pg_query_state(PG_FUNCTION_ARGS)
 						 costs = PG_GETARG_BOOL(2),
 						 timing = PG_GETARG_BOOL(3),
 						 buffers = PG_GETARG_BOOL(4),
-						 triggers = PG_GETARG_BOOL(5);
-		text			*format_text = PG_GETARG_TEXT_P(6);
+						 inv_rows = PG_GETARG_BOOL(5),
+						 triggers = PG_GETARG_BOOL(6);
+		text			*format_text = PG_GETARG_TEXT_P(7);
 		ExplainFormat	 format;
 		PGPROC			*proc;
 		Oid				 counterpart_user_id;
@@ -600,6 +615,7 @@ pg_query_state(PG_FUNCTION_ARGS)
 										   costs,
 										   timing,
 										   buffers,
+										   inv_rows,
 										   triggers,
 										   format);
 
@@ -644,6 +660,9 @@ pg_query_state(PG_FUNCTION_ARGS)
 					if (msg->warnings & BUFFERS_OFF_WARNING)
 						ereport(WARNING, (errcode(ERRCODE_WARNING),
 										  errmsg("buffers statistics disabled")));
+					if (msg->warnings & INV_ROWS_OFF_WARNING)
+						ereport(WARNING, (errcode(ERRCODE_WARNING),
+										  errmsg("invisible rows statistics disabled")));
 
 					oldcontext = MemoryContextSwitchTo(funcctx->multi_call_memory_ctx);
 
@@ -1109,6 +1128,7 @@ GetRemoteBackendQueryStates(PGPROC *leader,
 						    bool costs,
 						    bool timing,
 						    bool buffers,
+							bool inv_rows,
 						    bool triggers,
 						    ExplainFormat format)
 {
@@ -1130,6 +1150,7 @@ GetRemoteBackendQueryStates(PGPROC *leader,
 	params->costs = costs;
 	params->timing = timing;
 	params->buffers = buffers;
+	params->inv_rows = inv_rows;
 	params->triggers = triggers;
 	params->format = format;
 	pg_write_barrier();
@@ -1483,7 +1504,7 @@ pg_progress_bar(PG_FUNCTION_ARGS)
 	bg_worker_procs = GetRemoteBackendWorkers(proc);
 	msgs = GetRemoteBackendQueryStates(proc,
 									   bg_worker_procs,
-									   0, 1, 0, 0, 0,
+									   0, 1, 0, 0, 0, 0,
 									   EXPLAIN_FORMAT_JSON);
 	if (list_length(msgs) == 0)
 		elog(WARNING, "backend does not reply");
@@ -1537,7 +1558,7 @@ pg_progress_bar(PG_FUNCTION_ARGS)
 			bg_worker_procs = GetRemoteBackendWorkers(proc);
 			msgs = GetRemoteBackendQueryStates(proc,
 											bg_worker_procs,
-											0, 1, 0, 0, 0,
+											0, 1, 0, 0, 0, 0,
 											EXPLAIN_FORMAT_JSON);
 			if (list_length(msgs) == 0)
 				elog(WARNING, "backend does not reply");

@@ -86,6 +86,7 @@ pg_query_state(
         costs       boolean DEFAULT FALSE,
         timing      boolean DEFAULT FALSE,
         buffers     boolean DEFAULT FALSE,
+        inv_rows    boolean DEFAULT FALSE,
         triggers    boolean DEFAULT FALSE,
         format      text    DEFAULT 'text'
 ) returns TABLE (
@@ -108,6 +109,7 @@ Optional arguments:
  - `costs` --- add costs for each node;
  - `timing` --- print timing data for each node, if collecting of timing statistics is turned off on called side resulting output will contain WARNING message `timing statistics disabled`;
  - `buffers` --- print buffers usage, if collecting of buffers statistics is turned off on called side resulting output will contain WARNING message `buffers statistics disabled`;
+ - `inv_rows` --- print the number of times invisible (to the current snapshot) rows are accessed;
  - `triggers` --- include triggers statistics in result plan trees;
  - `format` --- EXPLAIN format to be used for plans printing, possible values: {`text`, `xml`, `json`, `yaml`}.
 
@@ -121,8 +123,9 @@ There are several user-accessible [GUC](https://www.postgresql.org/docs/9.5/stat
  - `pg_query_state.enable` --- disable (or enable) `pg_query_state` completely, default value is `true`
  - `pg_query_state.enable_timing` --- collect timing data for each node, default value is `false`
  - `pg_query_state.enable_buffers` --- collect buffers usage, default value is `false`
+ - `pg_query_state.enable_inv_rows` --- collect invisible rows usage, default value is `false`
 
-This parameters is set on called side before running any queries whose states are attempted to extract. **_Warning_**: if `pg_query_state.enable_timing` is turned off the calling side cannot get time statistics, similarly for `pg_query_state.enable_buffers` parameter.
+This parameters is set on called side before running any queries whose states are attempted to extract. **_Warning_**: if `pg_query_state.enable_timing` is turned off the calling side cannot get time statistics, similarly for `pg_query_state.enable_buffers` and `pg_query_state.enable_inv_rows` parameters.
 
 ## Examples
 Set maximum number of parallel workers on `gather` node equals `2`:

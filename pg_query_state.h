@@ -26,8 +26,9 @@
 #define WRITING_DELAY		(100 * 1000) /* 100ms */
 #define NUM_OF_ATTEMPTS		6
 
-#define TIMINIG_OFF_WARNING 1
-#define BUFFERS_OFF_WARNING 2
+#define TIMINIG_OFF_WARNING 	1
+#define BUFFERS_OFF_WARNING 	2
+#define INV_ROWS_OFF_WARNING 	4
 
 #define	PG_QS_MODULE_KEY	0xCA94B108
 #define	PG_QS_RCV_KEY       0
@@ -78,6 +79,7 @@ typedef struct
 	bool	costs;
 	bool	timing;
 	bool	buffers;
+	bool	inv_rows;
 	bool	triggers;
 	ExplainFormat format;
 } pg_qs_params;
@@ -86,6 +88,7 @@ typedef struct
 extern bool 	pg_qs_enable;
 extern bool 	pg_qs_timing;
 extern bool 	pg_qs_buffers;
+extern bool 	pg_qs_inv_rows;
 extern List 	*QueryDescStack;
 extern pg_qs_params *params;
 extern shm_mq 	*mq;

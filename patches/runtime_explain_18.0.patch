@@ -147,8 +147,15 @@ index 7e2792ead71..1290f543fee 100644
 +				}
 +				else
 +					appendStringInfo(es->str,
-+							" (Current loop: actual rows=%.0f, loop number=%.0f)",
++							" (Current loop: actual rows=%.0f, loop number=%.0f",
 +							rows, loop_num);
++
++				if (es->inv_rows)
++					appendStringInfo(es->str,
++							", invisible rows=%ld)",
++							planstate->instrument->inv_rows);
++				else
++					appendStringInfo(es->str, ")");
 +			}
 +			else
 +			{
@@ -164,6 +171,10 @@ index 7e2792ead71..1290f543fee 100644
 +						ExplainPropertyFloat("Running Time", NULL, total_sec, 3, es);
 +				}
 +				ExplainPropertyFloat("Actual Rows", NULL, rows, 0, es);
++
++				if (es->inv_rows)
++					ExplainPropertyInteger("Invisible Rows", NULL,
++											planstate->instrument->inv_rows, es);
 +			}
 +			ExplainCloseGroup("Current loop", "Current loop", true, es);
 +		}

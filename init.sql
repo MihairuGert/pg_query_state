@@ -6,6 +6,7 @@ CREATE FUNCTION pg_query_state(pid 		integer
 							 , costs 	boolean = FALSE
 							 , timing 	boolean = FALSE
 							 , buffers 	boolean = FALSE
+							 , inv_rows boolean = FALSE
 							 , triggers	boolean = FALSE
 						     , format	text = 'text')
 	RETURNS TABLE (pid integer
