@@ -21,6 +21,9 @@
 #endif
 #include "utils/builtins.h"
 #include "utils/memutils.h"
+#if PG_VERSION_NUM >= 190000
+#include "varatt.h"
+#endif
 
 /*
  * Structure of stack frame of fucntion call which resulted from analyze of query state
